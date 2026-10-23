@@ -1,4 +1,12 @@
 const STORAGE_KEY = "vp-anime-tracker-library-v1";
+const ANILIST_API = "https://graphql.anilist.co";
+const COVER_QUERY = `
+  query ($search: String!) {
+    Media(search: $search, type: ANIME, isAdult: false) {
+      coverImage { extraLarge large }
+    }
+  }
+`;
 
 const palettes = {
   coral: { background: "linear-gradient(145deg, #fa765f 0%, #b92f50 100%)", accent: "#ff6b5e" },
@@ -18,7 +26,7 @@ const defaultAnime = [
     totalEpisodes: 28,
     score: 9.4,
     palette: "mint",
-    cover: "",
+    cover: "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx154587-qQTzQnEJJ3oB.jpg",
     updatedAt: Date.now() - 1000,
   },
   {
@@ -30,7 +38,7 @@ const defaultAnime = [
     totalEpisodes: 23,
     score: 8.8,
     palette: "coral",
-    cover: "",
+    cover: "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx145064-hSNRJM03pvv1.jpg",
     updatedAt: Date.now() - 2000,
   },
   {
@@ -42,7 +50,7 @@ const defaultAnime = [
     totalEpisodes: 24,
     score: 9.1,
     palette: "yellow",
-    cover: "",
+    cover: "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx136430-gsBsJjA7hGh9.jpg",
     updatedAt: Date.now() - 3000,
   },
   {
@@ -54,7 +62,7 @@ const defaultAnime = [
     totalEpisodes: 24,
     score: 7.9,
     palette: "blue",
-    cover: "",
+    cover: "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx137822-U8naszP96vzC.png",
     updatedAt: Date.now() - 4000,
   },
   {
@@ -66,7 +74,7 @@ const defaultAnime = [
     totalEpisodes: 12,
     score: 8.5,
     palette: "lilac",
-    cover: "",
+    cover: "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx127230-DdP4vAdssLoz.png",
     updatedAt: Date.now() - 5000,
   },
   {
@@ -78,7 +86,7 @@ const defaultAnime = [
     totalEpisodes: 13,
     score: null,
     palette: "coral",
-    cover: "",
+    cover: "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx176496-9BDMjAZGEbq4.png",
     updatedAt: Date.now() - 6000,
   },
 ];
@@ -168,6 +176,57 @@ function safeCoverUrl(url) {
     return ["http:", "https:"].includes(parsed.protocol) ? parsed.href : "";
   } catch {
     return "";
+  }
+}
+
+async function findAnimeCover(title) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 8000);
+
+  try {
+    const response = await fetch(ANILIST_API, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify({ query: COVER_QUERY, variables: { search: title } }),
+      signal: controller.signal,
+    });
+
+    if (!response.ok) throw new Error(`AniList respondió con ${response.status}`);
+    const payload = await response.json();
+    return safeCoverUrl(
+      payload?.data?.Media?.coverImage?.extraLarge ||
+      payload?.data?.Media?.coverImage?.large ||
+      "",
+    );
+  } catch (error) {
+    console.warn(`No se pudo obtener la carátula de ${title}.`, error);
+    return "";
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+async function hydrateMissingCovers() {
+  const missing = state.anime.filter((anime) => !safeCoverUrl(anime.cover));
+  if (!missing.length) return;
+
+  const results = await Promise.allSettled(
+    missing.map((anime) => findAnimeCover(anime.title)),
+  );
+  let changed = false;
+
+  results.forEach((result, index) => {
+    if (result.status !== "fulfilled" || !result.value) return;
+    missing[index].cover = result.value;
+    changed = true;
+  });
+
+  if (changed) {
+    saveAnime();
+    render();
   }
 }
 
@@ -288,9 +347,19 @@ dialog.addEventListener("click", (event) => {
   if (outside) closeModal();
 });
 
-form.addEventListener("submit", (event) => {
+form.addEventListener("submit", async (event) => {
   event.preventDefault();
   const data = Object.fromEntries(new FormData(form));
+  const submitButton = form.querySelector('[type="submit"]');
+  const originalButtonText = submitButton.textContent;
+  let cover = safeCoverUrl(data.cover.trim());
+
+  if (!cover) {
+    submitButton.disabled = true;
+    submitButton.textContent = "Buscando carátula...";
+    cover = await findAnimeCover(data.title.trim());
+  }
+
   const totalEpisodes = Math.max(1, Number(data.totalEpisodes));
   let currentEpisode = Math.max(0, Number(data.currentEpisode));
   currentEpisode = Math.min(currentEpisode, totalEpisodes);
@@ -307,7 +376,7 @@ form.addEventListener("submit", (event) => {
     totalEpisodes,
     score: data.score === "" ? null : Math.min(10, Math.max(0, Number(data.score))),
     palette: data.palette,
-    cover: safeCoverUrl(data.cover.trim()),
+    cover,
     updatedAt: Date.now(),
   };
 
@@ -323,6 +392,8 @@ form.addEventListener("submit", (event) => {
   saveAnime();
   render();
   closeModal();
+  submitButton.disabled = false;
+  submitButton.textContent = originalButtonText;
 });
 
 grid.addEventListener("click", (event) => {
@@ -388,3 +459,4 @@ document.addEventListener("keydown", (event) => {
 
 document.querySelector("#year").textContent = new Date().getFullYear();
 render();
+hydrateMissingCovers();

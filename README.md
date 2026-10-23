@@ -9,6 +9,7 @@ Aplicación web estática para registrar animes, temporadas, progreso por episod
 - Control de progreso episodio a episodio.
 - Puntuaciones, búsqueda, filtros y ordenación.
 - Alta, edición y eliminación de títulos.
+- Búsqueda automática de carátulas mediante la API pública de AniList.
 - Diseño responsive y favicon propio.
 
 ## Desarrollo local

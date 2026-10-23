@@ -1142,6 +1142,12 @@ footer > span {
   text-transform: none;
 }
 
+.field-hint {
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.5;
+}
+
 .field input,
 .field select {
   width: 100%;
@@ -1159,6 +1165,12 @@ footer > span {
 .field select:focus {
   border-color: rgba(255, 107, 94, 0.65);
   box-shadow: 0 0 0 3px rgba(255, 107, 94, 0.08);
+}
+
+.button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+  transform: none;
 }
 
 .field select option {
