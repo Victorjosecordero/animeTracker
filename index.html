@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0d0d12" />
+    <meta
+      name="description"
+      content="Anime Tracker: organiza tus animes, temporadas, episodios pendientes y puntuaciones."
+    />
+    <title>Anime Tracker — Tu lista, a tu ritmo</title>
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="noise" aria-hidden="true"></div>
+
+    <header class="site-header">
+      <a class="brand" href="#inicio" aria-label="Anime Tracker, inicio">
+        <span class="brand-mark">VP</span>
+        <span class="brand-copy">
+          <strong>ANIME</strong>
+          <small>TRACKER</small>
+        </span>
+      </a>
+
+      <nav class="main-nav" aria-label="Navegación principal">
+        <a class="active" href="#biblioteca">Biblioteca</a>
+        <a href="#estadisticas">Estadísticas</a>
+      </nav>
+
+      <button class="button button-primary header-add" type="button" data-open-modal>
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 5v14M5 12h14" />
+        </svg>
+        Añadir anime
+      </button>
+    </header>
+
+    <main>
+      <section class="hero" id="inicio">
+        <div class="hero-copy">
+          <p class="eyebrow"><span></span> TU HISTORIA CONTINÚA</p>
+          <h1>Todo tu anime.<br /><em>Un solo lugar.</em></h1>
+          <p class="hero-description">
+            Guarda lo que ves, retoma cada historia exactamente donde la dejaste y
+            convierte tu lista infinita en algo que sí apetece abrir.
+          </p>
+          <div class="hero-actions">
+            <button class="button button-primary button-large" type="button" data-open-modal>
+              Empezar a registrar
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
+            </button>
+            <a class="text-link" href="#biblioteca">
+              Ver mi biblioteca
+              <span aria-hidden="true">↓</span>
+            </a>
+          </div>
+        </div>
+
+        <div class="hero-visual" aria-hidden="true">
+          <div class="orb orb-one"></div>
+          <div class="orb orb-two"></div>
+          <div class="hero-poster poster-back">
+            <span class="poster-number">02</span>
+            <div class="poster-moon"></div>
+            <p>NIGHT<br />SIGNAL</p>
+          </div>
+          <div class="hero-poster poster-front">
+            <div class="poster-topline"><span>NOW WATCHING</span><b>12</b></div>
+            <div class="poster-sun"></div>
+            <div class="poster-figure"></div>
+            <p>NEON<br /><strong>REQUIEM</strong></p>
+            <small>THE FINAL SEASON</small>
+          </div>
+          <div class="progress-float">
+            <div class="progress-icon">▶</div>
+            <div>
+              <span>PRÓXIMO EPISODIO</span>
+              <strong>07 <small>/ 12</small></strong>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="stats-strip" id="estadisticas" aria-label="Resumen de tu colección">
+        <article>
+          <span class="stat-icon coral">▶</span>
+          <div><strong id="watchingStat">0</strong><span>EN EMISIÓN</span></div>
+        </article>
+        <article>
+          <span class="stat-icon yellow">⌁</span>
+          <div><strong id="pendingStat">0</strong><span>EPISODIOS PENDIENTES</span></div>
+        </article>
+        <article>
+          <span class="stat-icon blue">✓</span>
+          <div><strong id="completedStat">0</strong><span>COMPLETADOS</span></div>
+        </article>
+        <article>
+          <span class="stat-icon lilac">★</span>
+          <div><strong id="scoreStat">—</strong><span>PUNTUACIÓN MEDIA</span></div>
+        </article>
+      </section>
+
+      <section class="library" id="biblioteca">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow"><span></span> TU COLECCIÓN</p>
+            <h2>Mi biblioteca</h2>
+          </div>
+          <p><span id="resultCount">0</span> títulos encontrados</p>
+        </div>
+
+        <div class="toolbar">
+          <div class="filters" role="group" aria-label="Filtrar por estado">
+            <button class="filter active" type="button" data-filter="all">Todos</button>
+            <button class="filter" type="button" data-filter="watching">Viendo</button>
+            <button class="filter" type="button" data-filter="pending">Pendientes</button>
+            <button class="filter" type="button" data-filter="completed">Completados</button>
+          </div>
+          <label class="search-box">
+            <span class="sr-only">Buscar anime</span>
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="11" cy="11" r="7" />
+              <path d="m20 20-4-4" />
+            </svg>
+            <input id="searchInput" type="search" placeholder="Buscar en tu lista..." autocomplete="off" />
+            <kbd>⌘ K</kbd>
+          </label>
+          <label class="sort-box">
+            <span class="sr-only">Ordenar resultados</span>
+            <select id="sortSelect">
+              <option value="recent">Más recientes</option>
+              <option value="title">Título A–Z</option>
+              <option value="score">Mejor puntuación</option>
+              <option value="pending">Más pendientes</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="anime-grid" id="animeGrid" aria-live="polite"></div>
+
+        <div class="empty-state" id="emptyState" hidden>
+          <span>空</span>
+          <h3>Aquí empieza tu próxima historia</h3>
+          <p>No hay títulos que coincidan con esta vista.</p>
+          <button class="button button-primary" type="button" data-open-modal>Añadir un anime</button>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <a class="brand footer-brand" href="#inicio">
+        <span class="brand-mark">VP</span>
+        <span class="brand-copy"><strong>ANIME</strong><small>TRACKER</small></span>
+      </a>
+      <p>Hecho para disfrutar más historias y perder menos episodios.</p>
+      <span>© <span id="year"></span> VP</span>
+    </footer>
+
+    <dialog class="anime-dialog" id="animeDialog" aria-labelledby="dialogTitle">
+      <form class="anime-form" id="animeForm" method="dialog">
+        <div class="dialog-header">
+          <div>
+            <p class="eyebrow"><span></span> NUEVO REGISTRO</p>
+            <h2 id="dialogTitle">Añadir a mi lista</h2>
+          </div>
+          <button class="icon-button" type="button" data-close-modal aria-label="Cerrar">×</button>
+        </div>
+
+        <input id="animeId" name="id" type="hidden" />
+        <div class="form-grid">
+          <label class="field field-wide">
+            <span>Título del anime</span>
+            <input id="titleInput" name="title" type="text" placeholder="Ej. Cowboy Bebop" required maxlength="80" />
+          </label>
+
+          <label class="field">
+            <span>Temporada</span>
+            <input name="season" type="text" placeholder="Temporada 1" maxlength="40" />
+          </label>
+
+          <label class="field">
+            <span>Estado</span>
+            <select name="status">
+              <option value="watching">Viendo</option>
+              <option value="pending">Pendiente</option>
+              <option value="completed">Completado</option>
+            </select>
+          </label>
+
+          <label class="field">
+            <span>Episodios vistos</span>
+            <input name="currentEpisode" type="number" min="0" value="0" required />
+          </label>
+
+          <label class="field">
+            <span>Episodios totales</span>
+            <input name="totalEpisodes" type="number" min="1" value="12" required />
+          </label>
+
+          <label class="field">
+            <span>Puntuación <small>(0–10)</small></span>
+            <input name="score" type="number" min="0" max="10" step="0.1" placeholder="—" />
+          </label>
+
+          <label class="field">
+            <span>Color de portada</span>
+            <select name="palette">
+              <option value="coral">Coral</option>
+              <option value="blue">Azul</option>
+              <option value="lilac">Lila</option>
+              <option value="yellow">Amarillo</option>
+              <option value="mint">Menta</option>
+            </select>
+          </label>
+
+          <label class="field field-wide">
+            <span>URL de portada <small>(opcional)</small></span>
+            <input name="cover" type="url" placeholder="https://..." />
+          </label>
+        </div>
+
+        <div class="form-actions">
+          <button class="button button-ghost" type="button" data-close-modal>Cancelar</button>
+          <button class="button button-primary" type="submit">Guardar anime</button>
+        </div>
+      </form>
+    </dialog>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <script src="./script.js"></script>
+  </body>
+</html>
